@@ -175,7 +175,7 @@
     <child link="wrist_2_link"/>
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.093 0.0"/>
     <axis xyz="0 0 1"/>
-    <limit effort="28.0" lower="-6.28318530718" upper="6.28318530718" velocity="3.2"/>
+    <limit effort="28.0" lower="-0.223598776 " upper="0.223598776 " velocity="1.2"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <link name="wrist_2_link">
@@ -337,17 +337,69 @@
     <child link="base"/>
   </joint>
   <!-- Frame coincident with all-zeros TCP on UR controller -->
-  <link name="tool0">
+  <!-- Pendulum Link (Thin cylinder attached to link_6) -->
+  <link name="pendulum_link">
     <inertial>
-      <mass value="0"/>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+      <origin xyz="0 0 -0.125" rpy="0 0 0" />
+      <mass value="0.001" />
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0000" iyz="0" izz="0.0001" /> <!-- ixx =izz = m * l **2 /3, rest is 0 (source wiki)  -->
     </inertial>
+    <visual>
+      <origin xyz="0 0 -0.125" rpy="0 0 0" />
+      <geometry>
+      <cylinder length="0.25" radius="0.0025"/> <!-- Thin cylinder, length 0.25m, radius 2.5mm -->
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.125" rpy="0 0 0" />
+      <geometry>
+      <cylinder length="0.25" radius="0.0025"/> <!-- Thin cylinder, length 0.25m, radius 2.5mm -->
+      </geometry>
+    </collision>
   </link>
-  <joint name="wrist_3_link-tool0_fixed_joint" type="fixed">
-    <origin rpy="-1.57079632679 0 0" xyz="0 0.0823 0"/>
-    <parent link="wrist_3_link"/>
-    <child link="tool0"/>
+
+  <!-- Pendulum Mass at the end of the pendulum_link -->
+  <link name="pendulum_mass">
+    <inertial>
+      <origin xyz="0 0 -0.03" rpy="0 0 0" />
+      <mass value="0.05" /> <!-- Mass m at the end of 100g -->
+      <inertia ixx="0.000036" ixy="0" ixz="0" iyy="0.000036" iyz="0" izz="0.000036" /> <!-- ixx = iyy=izz = 2 *m * r **2 /5 , rest is 0 (source wiki)   -->
+    </inertial>
+    <visual>
+      <origin xyz="0 0 -0.03" rpy="0 0 0" />
+      <geometry>
+        <sphere radius ="0.03" /> <!-- Small sphere representing the mass, radius of 3cm -->
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.03" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.03" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Pendulum Joint (connects pendulum_link to link_6) -->
+  <joint name="pendulum_joint" type="revolute">
+    <parent link="ee_link" /> <!-- Attach to link_6 -->
+    <child link="pendulum_link" />
+    <origin xyz="0 0 0" rpy="0 3.1416 0" /> <!-- Positioning pendulum at link_6's end -->
+    <axis xyz="0 0 1" /> <!-- Swinging along Y-axis -->
+    <limit lower="-6.28318530718" upper="6.28318530718"/>
+    <dynamics damping="0.1" friction="0.01"/>
+  </joint>
+
+  <!-- Pendulum Mass Joint (fixes mass to the end of the pendulum) -->
+  <joint name="pendulum_mass_joint" type="fixed">
+    <parent link="pendulum_link" />
+    <child link="pendulum_mass" />
+    <origin xyz="0 0 -0.25" rpy="0 0 0" /> <!-- Attach mass at the tip of pendulum -->
   </joint>
   <link name="world"/>
   <joint name="world_joint" type="fixed">
