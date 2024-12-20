@@ -248,7 +248,7 @@
     <origin xyz="0 0 0" rpy="0 3.1416 0" /> <!-- Positioning pendulum at link_6's end -->
     <axis xyz="1 0 0" /> <!-- Swinging along X-axis -->
     <limit lower="-66.28318530718" upper="66.28318530718"/>
-    <dynamics damping="0.0" friction="0.0"/>
+    <dynamics damping="0.001" friction="0.01"/>
   </joint>
   <!-- Pendulum Link (Thin cylinder attached to link_6) -->
   <link name="pendulum_link">
